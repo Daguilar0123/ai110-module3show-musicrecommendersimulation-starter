@@ -55,6 +55,19 @@ Closeness is `1 − |song − target|`, so the closer a song is to the target, t
 
 Most people describe the kind of music they like first and foremost by genre. People don't say "I like high-energy or low-valence music"; they say "I like hip hop, pop, country or classical." So genre is the label a listener gives, and the numeric features are how the system tells songs apart inside that label. Because genre is worth +2.0, this system might over-prioritize genre and ignore great songs that match the user's mood and energy. That is a bias I chose on purpose, and the weight-shift experiment later is where I test it.
 
+### Dataset and profiles (decided Nov 2, 2026)
+
+The catalog is 20 songs across pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip-hop, edm, country, classical, metal, r&b, latin, folk, and reggae, with Neon Echo and LoRoom each repeated on purpose so a later diversity penalty has something to act on.
+
+| Profile | genre | mood | energy | valence | likes_acoustic |
+|---|---|---|---|---|---|
+| pop_happy | pop | happy | 0.8 | 0.8 | — (no bonus) |
+| chill_lofi | lofi | chill | 0.35 | 0.6 | True |
+| intense_rock | rock | intense | 0.9 | 0.45 | — (no bonus) |
+| hiphop_fan | hip-hop | confident | 0.75 | 0.65 | — (no bonus) |
+| conflicted | pop | sad | 0.9 | 0.3 | — (no bonus) |
+| folk_acoustic | folk | hopeful | 0.45 | 0.7 | True |
+
 ### Data flow sketch (Phase 2 Step 4, Nov 2, 2026)
 
 One song's path from the CSV to the ranked list. Source file: [`diagrams/data_flow.mmd`](diagrams/data_flow.mmd); it renders on GitHub and at mermaid.live.
