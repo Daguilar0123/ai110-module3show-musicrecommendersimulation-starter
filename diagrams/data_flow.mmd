@@ -1,0 +1,26 @@
+%% Project 3 data-flow sketch (Phase 2 Step 4), decided Nov 2, 2026.
+%% Input (taste profile) -> Process (score every song) -> Output (ranked top k with reasons).
+flowchart LR
+    subgraph input [Input: user preferences]
+        P[Taste profile dict<br/>genre, mood, energy, valence, likes_acoustic<br/>src/main.py user_prefs]
+    end
+    subgraph data [Input: song data]
+        CSV[data/songs.csv<br/>20 rows, 10 columns]
+        L[load_songs<br/>csv module, numeric columns to float]
+    end
+    subgraph process [Process: the loop]
+        R[recommend_songs<br/>loops over every song]
+        S[score_song<br/>Scoring Rule: genre +2.0 / partial +1.0,<br/>mood +1.0, energy x1.0, valence x0.5, acoustic +0.5]
+        T[score and reasons list<br/>one per song]
+    end
+    subgraph output [Output: the ranking]
+        K[sorted by score, descending<br/>Ranking Rule, top k]
+        O[main.py prints<br/>title, score, reasons]
+    end
+    CSV -->|reads| L
+    L -->|returns list of dicts| R
+    P -->|passed as user_prefs| R
+    R -->|calls once per song| S
+    S -->|returns| T
+    T -->|collected| K
+    K -->|top k with explanation| O

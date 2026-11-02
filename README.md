@@ -55,6 +55,37 @@ Closeness is `1 − |song − target|`, so the closer a song is to the target, t
 
 Most people describe the kind of music they like first and foremost by genre. People don't say "I like high-energy or low-valence music"; they say "I like hip hop, pop, country or classical." So genre is the label a listener gives, and the numeric features are how the system tells songs apart inside that label. Because genre is worth +2.0, this system might over-prioritize genre and ignore great songs that match the user's mood and energy. That is a bias I chose on purpose, and the weight-shift experiment later is where I test it.
 
+### Data flow sketch (Phase 2 Step 4, Nov 2, 2026)
+
+One song's path from the CSV to the ranked list. Source file: [`diagrams/data_flow.mmd`](diagrams/data_flow.mmd); it renders on GitHub and at mermaid.live.
+
+```mermaid
+flowchart LR
+    subgraph input [Input: user preferences]
+        P[Taste profile dict<br/>genre, mood, energy, valence, likes_acoustic<br/>src/main.py user_prefs]
+    end
+    subgraph data [Input: song data]
+        CSV[data/songs.csv<br/>20 rows, 10 columns]
+        L[load_songs<br/>csv module, numeric columns to float]
+    end
+    subgraph process [Process: the loop]
+        R[recommend_songs<br/>loops over every song]
+        S[score_song<br/>Scoring Rule: genre +2.0 / partial +1.0,<br/>mood +1.0, energy x1.0, valence x0.5, acoustic +0.5]
+        T[score and reasons list<br/>one per song]
+    end
+    subgraph output [Output: the ranking]
+        K[sorted by score, descending<br/>Ranking Rule, top k]
+        O[main.py prints<br/>title, score, reasons]
+    end
+    CSV -->|reads| L
+    L -->|returns list of dicts| R
+    P -->|passed as user_prefs| R
+    R -->|calls once per song| S
+    S -->|returns| T
+    T -->|collected| K
+    K -->|top k with explanation| O
+```
+
 ---
 
 ## Getting Started
