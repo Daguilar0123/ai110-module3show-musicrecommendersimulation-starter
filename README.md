@@ -138,15 +138,22 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Output of `python -m src.main` (default profile `pop_happy`, top 5):
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+Loaded songs: 20
+
+== pop_happy: genre=pop, mood=happy, energy=0.8 ==
+1. Sunrise City — Neon Echo  [4.46]
+   because: genre match (+2.0); mood match (+1.0); energy close to target (+0.98); valence close to target (+0.48)
+2. Rooftop Lights — Indigo Parade  [3.46]
+   because: genre partial match (+1.0); mood match (+1.0); energy close to target (+0.96); valence close to target (+0.49)
+3. Gym Hero — Max Pulse  [3.35]
+   because: genre match (+2.0); energy close to target (+0.87); valence close to target (+0.48)
+4. Rain on the Radio — June Alder  [2.98]
+   because: genre match (+2.0); energy close to target (+0.75); valence far from target (+0.22)
+5. Fuego en la Calle — Luna Caliente  [1.47]
+   because: energy close to target (+1.00); valence close to target (+0.47)
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
@@ -155,11 +162,65 @@ Paste a sample of your recommender's output here as a text block so a reader can
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+Weight-shift experiment: energy weight 2.0 and genre weight 1.0 (default 1.0 and 2.0), run with `python -m src.main --profile pop_happy --experiment weight_shift`:
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+```
+Loaded songs: 20
+
+== pop_happy: genre=pop, mood=happy, energy=0.8 ==
+1. Sunrise City — Neon Echo  [4.44]
+   because: genre match (+1.0); mood match (+1.0); energy close to target (+1.96); valence close to target (+0.48)
+2. Rooftop Lights — Indigo Parade  [3.92]
+   because: genre partial match (+0.5); mood match (+1.0); energy close to target (+1.92); valence close to target (+0.49)
+3. Gym Hero — Max Pulse  [3.23]
+   because: genre match (+1.0); energy close to target (+1.74); valence close to target (+0.48)
+4. Rain on the Radio — June Alder  [2.73]
+   because: genre match (+1.0); energy close to target (+1.50); valence far from target (+0.22)
+5. Fuego en la Calle — Luna Caliente  [2.47]
+   because: energy close to target (+2.00); valence close to target (+0.47)
+```
+
+Under `weight_shift` the `pop_happy` top five keeps the same songs in the same order, but the scores move: Rain on the Radio (genre match) falls from 2.98 to 2.73 while Fuego en la Calle (no genre match) rises from 1.47 to 2.47, so the gap between them shrinks from 1.51 to 0.26. Past the top five, Skyline Static and Night Drive Loop swap ranks 7 and 8 (1.32 and 1.29 before, 2.18 and 2.25 after).
+
+Weight-shift experiment on the `conflicted` profile, run with `python -m src.main --profile conflicted --experiment weight_shift`:
+
+```
+Loaded songs: 20
+
+== conflicted: genre=pop, mood=sad, energy=0.9 ==
+1. Rain on the Radio — June Alder  [3.77]
+   because: genre match (+1.0); mood match (+1.0); energy close to target (+1.30); valence close to target (+0.47)
+2. Gym Hero — Max Pulse  [3.21]
+   because: genre match (+1.0); energy close to target (+1.94); valence close to target (+0.27)
+3. Sunrise City — Neon Echo  [3.07]
+   because: genre match (+1.0); energy close to target (+1.84); valence far from target (+0.23)
+4. Rooftop Lights — Indigo Parade  [2.46]
+   because: genre partial match (+0.5); energy close to target (+1.72); valence far from target (+0.24)
+5. Storm Runner — Voltline  [2.39]
+   because: energy close to target (+1.98); valence close to target (+0.41)
+```
+
+Under `weight_shift` the first four `conflicted` songs keep their order, and Rain on the Radio's lead over Gym Hero shrinks from 0.89 to 0.56 (4.12 vs 3.23 before, 3.77 vs 3.21 after). Empty Hall Etude (the mood match with far energy) rises from 1.74 to 2.02 but drops from rank 5 to rank 10, and Storm Runner moves from rank 7 (1.40) to rank 5 (2.39).
+
+Genre-half experiment: genre weight 0.5, everything else at the default, run with `python -m src.main --profile pop_happy --experiment genre_half`:
+
+```
+Loaded songs: 20
+
+== pop_happy: genre=pop, mood=happy, energy=0.8 ==
+1. Sunrise City — Neon Echo  [2.96]
+   because: genre match (+0.5); mood match (+1.0); energy close to target (+0.98); valence close to target (+0.48)
+2. Rooftop Lights — Indigo Parade  [2.71]
+   because: genre partial match (+0.2); mood match (+1.0); energy close to target (+0.96); valence close to target (+0.49)
+3. Gym Hero — Max Pulse  [1.85]
+   because: genre match (+0.5); energy close to target (+0.87); valence close to target (+0.48)
+4. Rain on the Radio — June Alder  [1.48]
+   because: genre match (+0.5); energy close to target (+0.75); valence far from target (+0.22)
+5. Fuego en la Calle — Luna Caliente  [1.47]
+   because: energy close to target (+1.00); valence close to target (+0.47)
+```
+
+Under `genre_half` the `pop_happy` top five keeps the same songs in the same order, and each full genre match loses 1.5 points (Rain on the Radio 2.98 to 1.48, Gym Hero 3.35 to 1.85, Sunrise City 4.46 to 2.96) and the partial match Rooftop Lights loses 0.75 (3.46 to 2.71), while Fuego en la Calle (no genre match) stays at 1.47. Rain on the Radio's lead over Fuego en la Calle shrinks from 1.51 to 0.01, and ranks 6 through 10 keep their default order and scores.
 
 ---
 
