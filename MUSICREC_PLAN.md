@@ -62,22 +62,22 @@ Worker prompts 02-06 were corrected at the source in the study repo (commit 4618
 ## Status
 
 ### S0
-started 19:54
+started 19:54; wave 1 merged and pushed 00:28; wave 2 (S5, S6) started about 01:30
 
 ### S2
-started 20:05; committed 7189eac; merged into main at e85b047 (23:45)
+started 20:05; committed 7189eac; merged e85b047; merge 1 complete and pushed (00:28): main b40ba07, 28 passed
 
 ### S3
-started 20:05; committed 91a1c2e; merged into main at a3fb91d (23:45); main 22 passed
+started 20:05; committed 91a1c2e; merged a3fb91d; merge 1 complete and pushed (00:28)
 
 ### S4
-started 20:05; committed 14cae76 on feat/cli (00:22, verified; Danny ran pytest and --all: 28 passed); ready to merge into main
+started 20:05; committed 14cae76; merged b40ba07; merge 1 complete and pushed (00:28); closing report requested
 
 ### S5
-not started
+started about 01:32; committed d1d8ff1 on experiment/mood-first (15:59, verified; 37 passed); ready for merge 2
 
 ### S6
-not started
+started about 01:28; committed 24c4f50 on feat/diversity (15:59, verified; 33 passed); ready for merge 2
 
 ### S7
 not started
