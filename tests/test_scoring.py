@@ -195,3 +195,14 @@ def test_different_profiles_give_different_tops(songs):
     assert pop_top["title"] == "Sunrise City"
     assert rock_top["title"] == "Storm Runner"
     assert pop_top["id"] != rock_top["id"]
+
+
+def test_reasons_show_quarter_point_contributions(songs):
+    # A contribution of 0.25 must print as +0.25, not +0.2; whole and half points keep one decimal.
+    song = _by_id(songs, 1)  # pop, happy, acousticness 0.18
+    prefs = {"genre": "pop", "likes_acoustic": False}
+    _, reasons = score_song(prefs, song, {"genre": 0.5, "acoustic": 0.25})
+    assert "genre match (+0.5)" in reasons
+    assert "acoustic fit (+0.25)" in reasons
+    _, partial = score_song({"genre": "pop"}, _by_id(songs, 10), {"genre": 0.5})  # "pop" inside "indie pop"
+    assert "genre partial match (+0.25)" in partial

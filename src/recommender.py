@@ -53,6 +53,12 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 
+def _points_text(value: float) -> str:
+    """Format a point contribution with two decimals, dropping one trailing zero: 1.0, 0.5, 0.25."""
+    text = f"{value:.2f}"
+    return text[:-1] if text.endswith("0") else text
+
+
 def score_song(user_prefs: Dict, song: Dict, weights: Optional[Dict] = None) -> Tuple[float, List[str]]:
     """Score one song against user_prefs; returns (score, reasons) using weights or DEFAULT_WEIGHTS."""
     w = {**DEFAULT_WEIGHTS, **(weights or {})}   # a partial weights dict fills its gaps from the defaults
@@ -64,16 +70,16 @@ def score_song(user_prefs: Dict, song: Dict, weights: Optional[Dict] = None) -> 
     if want_genre and have_genre and w["genre"] != 0:   # a zero weight leaves the term, and its reason, out
         if want_genre == have_genre:
             score += w["genre"]
-            reasons.append(f"genre match (+{w['genre']:.1f})")
+            reasons.append(f"genre match (+{_points_text(w['genre'])})")
         elif want_genre in have_genre or have_genre in want_genre:   # "pop" vs "indie pop"
             half = w["genre"] / 2
             score += half
-            reasons.append(f"genre partial match (+{half:.1f})")
+            reasons.append(f"genre partial match (+{_points_text(half)})")
 
     want_mood = str(user_prefs.get("mood") or "").strip().lower()
     if want_mood and w["mood"] != 0 and want_mood == str(song.get("mood") or "").strip().lower():
         score += w["mood"]
-        reasons.append(f"mood match (+{w['mood']:.1f})")
+        reasons.append(f"mood match (+{_points_text(w['mood'])})")
 
     target_energy = user_prefs.get("energy")
     if target_energy is not None and w["energy"] != 0:
@@ -94,7 +100,7 @@ def score_song(user_prefs: Dict, song: Dict, weights: Optional[Dict] = None) -> 
     likes_acoustic = user_prefs.get("likes_acoustic")   # absent: no bonus either way
     if likes_acoustic is not None and w["acoustic"] != 0 and bool(likes_acoustic) == (song["acousticness"] > 0.5):
         score += w["acoustic"]
-        reasons.append(f"acoustic fit (+{w['acoustic']:.1f})")
+        reasons.append(f"acoustic fit (+{_points_text(w['acoustic'])})")
 
     if not reasons:
         reasons.append("no feature matched (+0.0)")
