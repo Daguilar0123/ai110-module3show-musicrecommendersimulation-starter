@@ -65,13 +65,13 @@ Worker prompts 02-06 were corrected at the source in the study repo (commit 4618
 started 19:54
 
 ### S2
-started 20:05; committed 7189eac on feat/data (22:29, verified); ready for merge 1
+started 20:05; committed 7189eac; merged into main at e85b047 (23:45)
 
 ### S3
-started 20:05; STOP 1 reviewed 21:51 (diff correct, 14 passed); waiting on Step 3
+started 20:05; committed 91a1c2e; merged into main at a3fb91d (23:45); main 22 passed
 
 ### S4
-started 20:05; STOP 1 reviewed 21:51 (diff correct, 5 passed); parked until 'main has data and scoring'
+started 20:05; committed 14cae76 on feat/cli (00:22, verified; Danny ran pytest and --all: 28 passed); ready to merge into main
 
 ### S5
 not started
