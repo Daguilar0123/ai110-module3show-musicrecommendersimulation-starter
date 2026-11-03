@@ -41,7 +41,16 @@ Scorer = Callable[[Dict, Dict, Optional[Dict]], Tuple[float, List[str]]]
 
 def load_songs(csv_path: str) -> List[Dict]:
     """Read the CSV into a list of dicts; NUMERIC_FIELDS become floats, id becomes int."""
-    raise NotImplementedError  # S2 load_songs
+    try:
+        with open(csv_path, newline="", encoding="utf-8") as f:
+            songs = list(csv.DictReader(f))
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Song catalog not found at '{csv_path}'. Check the path to songs.csv.") from None
+    for song in songs:
+        song["id"] = int(song["id"])
+        for field in NUMERIC_FIELDS:
+            song[field] = float(song[field])
+    return songs
 
 
 def score_song(user_prefs: Dict, song: Dict, weights: Optional[Dict] = None) -> Tuple[float, List[str]]:
