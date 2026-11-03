@@ -57,19 +57,21 @@ Predicted conflict zones: none by design in `src/*.py`. If a conflict appears, t
 - `PROFILES` holds six profiles (the README table), not one. The folk_acoustic profile is new.
 - `main.py` imports `score_song` as well as `DEFAULT_WEIGHTS`, `load_songs`, `recommend_songs`.
 
+Worker prompts 02-06 were corrected at the source in the study repo (commit 4618577, Nov 2, 2026, ~8:30 PM) after the cross-check logged in ai_interactions.md.
+
 ## Status
 
 ### S0
 started 19:54
 
 ### S2
-not started
+started 20:05
 
 ### S3
-not started
+started 20:05
 
 ### S4
-not started
+started 20:05
 
 ### S5
 not started
