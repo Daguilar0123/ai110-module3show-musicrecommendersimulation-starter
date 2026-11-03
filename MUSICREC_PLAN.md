@@ -74,10 +74,10 @@ started 20:05; committed 91a1c2e; merged a3fb91d; merge 1 complete and pushed (0
 started 20:05; committed 14cae76; merged b40ba07; merge 1 complete and pushed (00:28); closing report requested
 
 ### S5
-started about 01:32; committed d1d8ff1 on experiment/mood-first (15:59, verified; 37 passed); ready for merge 2
+started about 01:32; committed d1d8ff1; merged into main in merge 2 (16:02); main 42 passed; write-ups (table paragraphs, design-pattern note) are Danny's
 
 ### S6
-started about 01:28; committed 24c4f50 on feat/diversity (15:59, verified; 33 passed); ready for merge 2
+started about 01:28; committed 24c4f50; merged into main in merge 2 (16:02); main 42 passed; fairness paragraph is Danny's
 
 ### S7
 not started
