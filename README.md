@@ -127,34 +127,49 @@ flowchart LR
 
 ### Setup
 
-1. Create a virtual environment (optional but recommended):
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
-
-2. Install dependencies
+This project uses [uv](https://docs.astral.sh/uv/) with Python 3.13 (pinned in `.python-version`). Run these from the repo root:
 
 ```bash
-pip install -r requirements.txt
+uv venv
+uv pip install -r requirements.txt
+.venv/bin/python --version        # should print Python 3.13.x
 ```
 
-3. Run the app:
+Without uv, this also works: `python -m venv .venv && .venv/bin/pip install -r requirements.txt`.
+
+### Run the recommender
 
 ```bash
-python -m src.main
+.venv/bin/python -m src.main --all
 ```
+
+With no flags it runs the default profile (`pop_happy`) and prints the top five songs with the reasons for each score. The flags:
+
+- `--profile NAME` runs one profile: `pop_happy`, `chill_lofi`, `intense_rock`, `hiphop_fan`, `conflicted` or `folk_acoustic`.
+- `--all` runs all six profiles.
+- `--k N` changes how many songs are recommended (default 5).
+- `--experiment NAME` swaps in an alternate weight set: `weight_shift`, `no_mood` or `genre_half`.
+- `--mode NAME` picks a ranking mode: `weighted` (the default recipe), `genre_first`, `mood_first` or `energy_similarity`.
+- `--diversity [PENALTY]` subtracts a penalty (default 0.5) for each repeat of an artist already in the list.
+- `--table` prints a table (rank, title, artist, score, why) instead of the because lines.
+
+For example: `.venv/bin/python -m src.main --profile hiphop_fan --mode genre_first --diversity --table`
 
 ### Running Tests
 
-Run the starter tests with:
-
 ```bash
-pytest
+.venv/bin/python -m pytest -v
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+Run it from the repo root. The suite is 43 tests, all passing:
+
+- `tests/test_recommender.py` (2): the starter tests for the `Recommender` class.
+- `tests/test_data.py` (5): `load_songs` returns enough songs with the required columns and diverse genres, converts the numeric columns to floats, and raises a clear error for a missing file.
+- `tests/test_scoring.py` (16): each scoring term, the reasons, partial genre matches, and how ties are ranked.
+- `tests/test_cli.py` (6): the profiles are distinct and all run, the output shows title, score and reasons, the flag defaults parse, and the experiments pass their weights through.
+- `tests/test_modes.py` (6): every mode returns a scorer, an unknown mode raises, `weighted` is `score_song` itself, `genre_first` outranks it on genre, and explicit weights override a mode's.
+- `tests/test_diversity.py` (5): a repeat artist is penalized with a reason, a zero penalty changes nothing, the input list is not mutated, and `recommend_songs` accepts the penalty.
+- `tests/test_table.py` (3): the table has a header and rows, includes the reasons, and returns a string instead of printing.
 
 ---
 
@@ -251,7 +266,7 @@ Loaded songs: 20
 1. Sunrise City — Neon Echo  [2.96]
    because: genre match (+0.5); mood match (+1.0); energy close to target (+0.98); valence close to target (+0.48)
 2. Rooftop Lights — Indigo Parade  [2.71]
-   because: genre partial match (+0.2); mood match (+1.0); energy close to target (+0.96); valence close to target (+0.49)
+   because: genre partial match (+0.25); mood match (+1.0); energy close to target (+0.96); valence close to target (+0.49)
 3. Gym Hero — Max Pulse  [1.85]
    because: genre match (+0.5); energy close to target (+0.87); valence close to target (+0.48)
 4. Rain on the Radio — June Alder  [1.48]
