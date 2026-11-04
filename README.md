@@ -17,7 +17,7 @@ This version is a content-based music recommender that runs from the command lin
 
 ## How The System Works
 
-I believe Spotify does a combination of both. When you create a new account, Spotify and apps that serve content of some form, be it news, podcasts, Substack, Netflix, YouTube, etc., will ask a new user for their preferences. Usually you pick three or more artists you like. This is the beginning of building a user taste profile based on what I explicitly tell the app at the creation of my account. Then, based on that profile, it might first share what I like based on content-based filtering, but as I build a more organic profile, collaborative filtering gets used to introduce me to new songs or to fill out my taste profile if it is sparse.
+I believe Spotify does a combination of both content-based and collaborative filtering. When you create a new account, Spotify and apps that serve content of some form, be it news, podcasts, Substack, Netflix, YouTube, etc., ask a new user for their preferences; Spotify asks for a handful of artists you like, five or more. That is the beginning of a taste profile based on what I explicitly tell the app. My first picture of what happens next was old-school: content-based filtering first, then collaborative filtering later as the profile fills out. When I checked that against Spotify's own research (Nov 3, 2026), it turned out both kinds of signal run from day one, and what changes over time is the input: the sign-up picks at first, then my listening. The profile itself is not a list of picks or genre buckets; it is one learned vector built from the audio of what I play and from which songs show up together on people's playlists, over roughly the last six months, month and week. Genre is not an input to that at all; it emerges from the clusters afterward, which I found interesting because it means my genre weight below is a shortcut for signals a real system learns.
 
 If all we have is song data, then we have no choice but to do content-based filtering. The input data is the seven attribute columns of `data/songs.csv`: genre, mood, energy, tempo_bpm, valence, danceability, and acousticness. The user preferences are a taste profile dictionary that stands in for the onboarding step, where a new listener picks artists they like. Collaborative filtering, which needs other users' behavior, is out of reach because we have no likes, skips, playlists, or listening history. The ranking has two parts. The Scoring Rule grades one song by itself: how well does it fit this listener? It's like a judge filling in a rubric for a single contestant. The Ranking Rule then looks at all the grades, lines the songs up from highest to lowest, and keeps the top few. A score alone can't tell you what to play, and a list can't be put in order without scores. So we need both.
 
@@ -31,7 +31,7 @@ If all we have is song data, then we have no choice but to do content-based filt
 
 (`tempo_bpm` and `danceability` are loaded but not scored in v1.)
 
-### What a UserProfile stores
+### What a taste profile stores
 
 - favorite genre
 - favorite mood
@@ -50,6 +50,28 @@ If all we have is song data, then we have no choice but to do content-based filt
 - Every score comes with a list of reasons.
 
 Closeness is `1 − |song − target|`, so the closer a song is to the target, the higher it scores, whether the song is above or below. Worked example with a target energy of 0.8: a song at 0.82 scores 0.98, a song at 0.42 scores 0.62, and a song at 0.28 scores 0.48.
+
+Point recipe as a flowchart (added Nov 3, 2026):
+
+```mermaid
+flowchart TD
+    S[One song + one taste profile] --> G{Genre}
+    G -->|same genre| G2[+2.0]
+    G -->|one contains the other, e.g. pop vs indie pop| G1[+1.0]
+    G -->|no match| G0[+0]
+    S --> M{Mood}
+    M -->|same mood| M1[+1.0]
+    M -->|different| M0[+0]
+    S --> E[Energy closeness<br/>1.0 x 1 minus the gap]
+    S --> V{Profile has a valence target?}
+    V -->|yes| V1[Valence closeness<br/>0.5 x 1 minus the gap]
+    V -->|no| V0[skipped]
+    S --> A{likes_acoustic set?}
+    A -->|yes, and it agrees with acousticness over 0.5| A1[+0.5]
+    A -->|no, or disagrees| A0[+0]
+    G2 & G1 & G0 & M1 & M0 & E & V1 & V0 & A1 & A0 --> T[Total score<br/>plus one reason line per term]
+    T --> R[recommend_songs sorts all 20 totals<br/>and keeps the top 5]
+```
 
 ### Why genre weighs the most, and the bias I expect
 
@@ -156,7 +178,25 @@ Loaded songs: 20
    because: energy close to target (+1.00); valence close to target (+0.47)
 ```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+## Visual Summary Table
+
+The same run can print as a table instead of the because lines: `python -m src.main --profile pop_happy --table`. It uses the `tabulate` library through `format_table` in `src/formatting.py`, in GitHub format, with the reasons wrapped at about sixty characters so the "Why" column stays readable. The table combines with `--mode` and `--diversity`, so `python -m src.main --all --table --mode genre_first --diversity` prints six tables with the penalty visible in the Why column. I added it because the reasons line is the whole point of this recommender, and a column makes it easier to compare two songs' reasons at a glance than the indented lines do.
+
+```
+== pop_happy: genre=pop, mood=happy, energy=0.8 ==
+| #   | Title             | Artist        | Score   | Why                                                         |
+|-----|-------------------|---------------|---------|-------------------------------------------------------------|
+| 1   | Sunrise City      | Neon Echo     | 4.46    | genre match (+2.0); mood match (+1.0); energy close to      |
+|     |                   |               |         | target (+0.98); valence close to target (+0.48)             |
+| 2   | Rooftop Lights    | Indigo Parade | 3.46    | genre partial match (+1.0); mood match (+1.0); energy close |
+|     |                   |               |         | to target (+0.96); valence close to target (+0.49)          |
+| 3   | Gym Hero          | Max Pulse     | 3.35    | genre match (+2.0); energy close to target (+0.87); valence |
+|     |                   |               |         | close to target (+0.48)                                     |
+| 4   | Rain on the Radio | June Alder    | 2.98    | genre match (+2.0); energy close to target (+0.75); valence |
+|     |                   |               |         | far from target (+0.22)                                     |
+| 5   | Fuego en la Calle | Luna Caliente | 1.47    | energy close to target (+1.00); valence close to target     |
+|     |                   |               |         | (+0.47)                                                     |
+```
 
 ---
 
@@ -222,32 +262,27 @@ Loaded songs: 20
 
 Under `genre_half` the `pop_happy` top five keeps the same songs in the same order, and each full genre match loses 1.5 points (Rain on the Radio 2.98 to 1.48, Gym Hero 3.35 to 1.85, Sunrise City 4.46 to 2.96) and the partial match Rooftop Lights loses 0.75 (3.46 to 2.71), while Fuego en la Calle (no genre match) stays at 1.47. Rain on the Radio's lead over Fuego en la Calle shrinks from 1.51 to 0.01, and ranks 6 through 10 keep their default order and scores.
 
+My reading of the three experiments: none of them made the recommendations more accurate for every profile at once; they made them different, and each one showed which single term had been deciding a slot. For pop_happy nothing moved because its top songs match on every term at once, so the weights were partly redundant. For conflicted, weight_shift finally let the loud songs in, which is closer to what a listener asking for energy 0.9 probably meant. And genre_half is the proof of the bias I predicted above: a full genre match had been worth more than every numeric term combined, since Rain on the Radio's 1.51 lead over a song that fits the numbers better was almost entirely the word "pop".
+
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- **The catalog is too small for the recipe.** Twenty invented songs across sixteen genres means three of my six profiles have exactly one song of their genre, so the genre weight decides the first slot and then goes quiet, and the rest of the list is off-genre songs ranked on numbers alone. A real service has millions of songs and can let genre act as a gate.
+- **It never learns.** Spotify models a listener as one learned vector that updates from plays and playlists over long and short time windows; my profile is a dict with five settings and no time axis, and it never changes, because the catalog has no plays, skips, likes or playlists. Collaborative filtering can never switch on here.
+- **The features are opinions, not measurements.** Pandora's analysts label about 400 traits per song and Spotify learns hundreds of dimensions from the audio; I score five columns whose numbers and labels were typed by whoever wrote the row. It does not know lyrics or language at all, and "valence 0.25" means "I imagined this song as sad," not something anyone heard.
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+The model card goes deeper on the genre bias, with the numbers.
 
 ---
 
 ## Reflection
 
-Read and complete `model_card.md`:
+The full write-up, including limitations and bias with the numbers, is in the [Model Card](model_card.md).
 
-[**Model Card**](model_card.md)
+What I learned about turning data into predictions is that it takes two separate rules, and that the whole program is eight words long once you see them: load, pick, loop, score, sort, cut, join, print. The scoring rule gives one song a single number from several features, like a judge filling in a rubric for one contestant, and the ranking rule lines up twenty of those numbers and keeps the top five. A score alone cannot tell you what to play, and a list cannot be ordered without scores. A real system has the same shape (features, profile, score, sort) but learns the profile and the weights from behavior; mine has hand-set weights and learns nothing, which is the cold-start state every new user starts in.
 
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Where bias shows up is in the weights and in who typed the data. My genre weight is a bias I chose on purpose, because people name their taste by genre first, and the genre_half experiment measured exactly what it costs: a slow sad pop song beat a loud happy song that fit the numbers better, by 1.51 points, almost all of it the word "pop". That is the small version of what Spotify's own 2020 study found, that algorithm-driven listening is less diverse than listening people choose themselves. The other place is the labels: whoever decides that a song is "chill" or "pop" has already shaped every recommendation, and in my catalog that was one person typing rows. The diversity penalty is my one counter-measure, and it taught me that fairness costs a little accuracy, which is a trade a real system has to make on purpose rather than by accident.
 
 
 

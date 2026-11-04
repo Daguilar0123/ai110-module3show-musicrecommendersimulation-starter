@@ -80,10 +80,10 @@ started about 01:32; committed d1d8ff1; merged into main in merge 2 (16:02); mai
 started about 01:28; committed 24c4f50; merged into main in merge 2 (16:02); main 42 passed; fairness paragraph is Danny's
 
 ### S7
-not started
+started about 18:48 in agent mode; committed fd341e2 on feat/attributes (50 passed); NOT merged into main for the first submit (it changes every profile's scores and would stale the README, experiment and model card outputs); SF8 written by Danny; merge or leave for the resubmit
 
 ### S8
 not started
 
 ### Danny-09
-not started
+README limitations, reflection and Visual Summary Table, model card 1-9, SF8 and SF10 written by Danny (Nov 4, 2026); the polish work (S8) is done by the coordinator on main, docs only

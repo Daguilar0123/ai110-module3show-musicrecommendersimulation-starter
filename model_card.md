@@ -1,89 +1,50 @@
 # 🎧 Model Card: Music Recommender Simulation
 
-## 1. Model Name  
+## 1. Model Name
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
-
----
-
-## 2. Intended Use  
-
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+**Sad But Loud 1.0** (named after the profile that taught me the most). A content-based music recommender that scores 20 invented songs against one listener's taste profile and explains every pick.
 
 ---
 
-## 3. How the Model Works  
+## 2. Intended Use
 
-Explain your scoring approach in simple language.  
-
-Prompts:  
-
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
-
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+This recommender takes one taste profile (a favorite genre, a favorite mood, a target energy, optionally a target valence and whether the listener likes acoustic sound) and returns the five songs from a 20-song catalog that fit it best, each with the reasons for its score. It assumes a listener can describe their taste as a single profile, that genre is the first word they would use for it, and that a song's fit can be summed from a handful of attributes. It is built for classroom exploration of how a recommender turns data into predictions. It is not for real listeners: the songs are invented, the catalog is too small to filter by genre, and it never actually learns from what anyone plays.
 
 ---
 
-## 4. Data  
+## 3. How the Model Works
 
-Describe the dataset the model uses.  
-
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+Each song carries a few facts: its genre, its mood, and numbers between 0 and 1 for how energetic, how happy-sounding, and how acoustic it is. The listener's profile carries the same kinds of facts as targets. The scoring rule grades one song at a time, like a judge filling in a rubric for a single contestant. A matching genre is worth the most, two points, or one point if the names overlap the way "pop" and "indie pop" do. A matching mood is worth one point. Energy and happiness are scored by closeness: one minus the gap between the song and the target, so a song slightly above and a song slightly below the target earn the same, and an exact match earns full credit; energy counts in full and happiness counts at half, and only when the profile names a target. If the listener said they like acoustic sound and the song is acoustic, half a point more. The points add up to one score, and every term that earned points writes one reason line. The ranking rule then lines up all twenty scores, highest first, and keeps the top five. The starter had no logic at all, only empty functions; I decided the recipe, added the reasons, the six profiles, the command-line flags, and three experiments that swap the weights. This is content-based filtering in the cold-start state: the profile stands in for the artists a new user picks at sign-up, and nothing is learned afterward, because the catalog has no listening data.
 
 ---
 
-## 5. Strengths  
+## 4. Data
 
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+The catalog is 20 invented songs with ten columns each: id, title, artist, genre, mood, energy, tempo, valence, danceability and acousticness. The starter shipped 10; I approved 10 more (ids 11 to 20) on Nov 2 to cover genres the starter lacked and to fill an empty band of energy between 0.43 and 0.74. There are 16 genres (pop and lofi have three songs each, every other genre has one) and 14 moods, and two artists, Neon Echo and LoRoom, appear three times each on purpose so the diversity penalty has something to act on. Energy runs from 0.18 to 0.97. I score five of the columns; tempo and danceability are loaded but unused, because on this catalog they mostly repeat energy. Nothing in the data is behavior: no plays, skips, likes, playlists or listening history, which is why collaborative filtering is impossible here. Nothing is measured from audio either; every number is what the row's author imagined, and the genre and mood words are that author's opinion.
 
 ---
 
-## 6. Limitations and Bias 
+## 5. Strengths
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+For every one of the six profiles, the song that matches both labels comes first, and the because line says why in a way I can check by hand: Sunrise City for pop_happy, Library Rain for chill_lofi, Storm Runner for intense_rock, Crown Math for hiphop_fan, Porch Light Hymn for folk_acoustic. The two profiles I built as opposites, intense_rock and chill_lofi, share no songs at all, which matched my intuition exactly. chill_lofi's whole top five is low-energy and acoustic, so the acoustic bonus does what I meant it to do. The closeness rule captures something real: a song at energy 0.82 against a target of 0.8 scores almost perfectly, while a song at 0.28 scores about half, and neither direction is punished more than the other. And the experiments are cheap to run, which made the system easy to question.
 
 ---
 
-## 7. Evaluation  
+## 6. Limitations and Bias
 
-How you checked whether the recommender behaved as expected. 
+The biggest limitation is that genre is worth 2 of the 5 possible points, and this catalog is too small for that to work the way I meant it. In my opinion a genre-first bias is what I want as a listener: when I am in a hip-hop profile I want to be exposed to new songs, but I do not want classical to play. With millions of songs, genre can act as a gate and the numbers can rank what is inside it. With only 20 songs across 16 genres, three of my six profiles (rock, hip-hop, folk) have exactly one song of their genre, so the weight hands that song a 2.0-point head start and then has nothing left to reward; the other four slots are filled by off-genre songs on numbers alone. The research I had done on Spotify found that it does not score by genre at all: genre emerges from the audio and from which songs people play and playlist together, which I found interesting, because it means my genre weight is a shortcut for signals a real system learns. Where a genre has three songs, the weight does dominate: for pop_happy, Rain on the Radio, a slow sad pop song, sat 1.51 points above Fuego en la Calle, a loud happy latin song that fits the numbers better. It should not have: pop_happy asks for energy 0.8 and valence 0.8, Fuego sits at 0.80 and 0.86, almost a perfect fit, while Rain sits at 0.55 and 0.25, and the only thing Rain had going for it was the word "pop". Cutting the genre weight in half collapsed that lead to 0.01. In a quick extra run with the genre weight set to zero, Rain on the Radio still won the conflicted profile on its mood match, but Gym Hero and Sunrise City dropped out of the top five and Iron Verdict, Storm Runner and Night Drive Loop, the loud songs it was asking for, came in.
 
-Prompts:  
+This is the small version of a filter bubble: the system keeps showing more of the same label, and Spotify's own 2020 study found algorithm-driven listening is less diverse than organic listening. A second limitation is the labels themselves: genre and mood are opinions typed by whoever wrote the row, the songs are invented, and numbers like valence are what the author imagined rather than measurements of audio; with only five scored features, genre is also standing in for the hundreds of audio and behavior signals a real system has.
 
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
+The diversity penalty (Challenge 3) is my one counter-measure. When --diversity is on, a song whose artist already appears higher in the list loses 0.5 points per repeat and the list is re-sorted, so one artist cannot fill the top five. For the hiphop_fan profile this turned four artists into five: Sunrise City, the second Neon Echo song, dropped out and Velvet Hours by Marlo Reyes came in. The cost is fairness bought with a little accuracy: Velvet Hours at 1.29 is shown above Sunrise City at 1.33, a slightly weaker match ahead of a better one. The penalty knows nothing about what anyone played; it only looks at the list it is building.
 
-No need for numeric metrics unless you created some.
+---
+
+## 7. Evaluation
+
+I tested six taste profiles: pop_happy, chill_lofi, intense_rock, hiphop_fan, folk_acoustic, and one deliberately conflicting profile, conflicted (pop, sad, energy 0.9), that I describe as "sad but loud" because its labels and its numbers pull in opposite directions. For each one I ran `python -m src.main --all` and asked three things of the top five: does the first song match both labels, do the next four make sense for that listener, and does the because line explain the score in a way I can check by hand. I also ran three weight experiments (weight_shift, no_mood, genre_half), the diversity penalty on every profile, and the 43 automated tests after every merge; the coordinator session separately re-computed all 360 scores (6 profiles times 20 songs times 3 weight sets) with its own formula and got 0 mismatches.
+
+What surprised me most was conflicted. I expected the loud songs to win because energy 0.9 is an extreme ask, but Rain on the Radio, a 0.55-energy song, came first, because it is the only pop and sad song in the catalog and the two labels are worth 3.0 points together. Empty Hall Etude, a classical piece at energy 0.18, even made the top five on the mood match alone. The second surprise was how little moved under weight_shift: pop_happy kept the same five songs in the same order and only the scores changed. The third was hiphop_fan: after Crown Math, the only hip-hop song, slots two through five are within 0.13 points of each other, decided by energy and valence alone, which is why a 0.5 diversity penalty was enough to reshuffle them.
 
 Profile `pop_happy`, top 5 (`python -m src.main --all`, Nov 2, 2026):
 
@@ -181,27 +142,24 @@ Profile `folk_acoustic`, top 5 (`python -m src.main --all`, Nov 2, 2026):
    because: energy close to target (+0.95); valence close to target (+0.45); acoustic fit (+0.5)
 ```
 
----
+Comparing the profiles in pairs shows what the preferences are actually testing for. intense_rock and chill_lofi share no songs at all: their energy targets are 0.9 and 0.35, so every song that is close for one is far for the other, and the acoustic bonus only chill_lofi can earn pushes Library Rain to a perfect 5.00 while Storm Runner leads the rock list at 4.47. pop_happy and conflicted share four of five songs because they share the genre pop, but the order flips on mood: Rain on the Radio is fourth for pop_happy and first for conflicted because "sad" matches it, while Sunrise City drops from first to third once "happy" no longer counts. chill_lofi and folk_acoustic share three songs (Midnight Coding, Focus Flow, Coffee Shop Stories) because both are low-energy acoustic listeners; the lofi songs lose their genre and mood points for folk_acoustic and fall from 4.91 and 3.94 to 1.90 each, held up only by closeness and the acoustic bonus. pop_happy and hiphop_fan look alike on the numbers (energy 0.8 versus 0.75, valence 0.8 versus 0.65) and share three songs, but the labels separate them completely at the top: Sunrise City is first for one and fifth for the other. The pattern I see across all six is that the first slot is decided by the labels and the rest of the list is decided by the numbers, and the numbers only get a real say when the catalog has more than one song of the profile's genre.
 
-## 8. Future Work  
-
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+The experiments confirmed that. weight_shift (energy 2.0, genre 1.0) left pop_happy's list unchanged and only moved the gaps, but for conflicted it brought Storm Runner into the top five and pushed Empty Hall Etude from fifth to tenth, which is the list I originally expected for a loud profile. no_mood took Rain on the Radio's win away from conflicted and gave it to Gym Hero. genre_half kept pop_happy's order but shrank Rain's lead over Fuego en la Calle from 1.51 to 0.01, the number I use in the Limitations section. None of the experiments made the recommendations more accurate for every profile at once; they made them different, and each one exposed which single term had been deciding a slot.
 
 ---
 
-## 9. Personal Reflection  
+## 8. Future Work
 
-A few sentences about your experience.  
+First, more songs per genre, so that genre can work as a gate the way I intended instead of deciding one slot and going quiet; that is the direct fix for the limitation above. Second, a two-cluster taste profile: a primary and a secondary preference dict with weights like 0.7 and 0.3, scoring each song against both and keeping the higher weighted result, so a listener who likes hip-hop and also likes folk is not forced into one profile. Third, richer song features, which the attributes extension starts tonight with popularity, release decade, mood tags, an explicit flag and duration; Pandora labels about 400 traits per song, and I score 5. If I kept going I would also tune the diversity penalty so it can penalize a repeated genre as well as a repeated artist, and print the margin between first and second place so a reader can see when a pick was decided by a single label.
 
-Prompts:  
+---
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+## 9. Personal Reflection
+
+My biggest learning moment was understanding that a recommender needs two separate rules and why. The scoring rule gives one song a single number from several features, and the ranking rule puts twenty of those numbers in order and cuts the list; a score alone cannot tell you what to play, and a list cannot be ordered without scores. Once that clicked, the whole program read as load, pick, loop, score, sort, cut, join, print.
+
+AI did most of the typing and I did the deciding. The sessions proposed the recipe, wrote the code test-first, and ran the experiments, and I reviewed every diff and ran every git command myself. I double-checked it constantly: I ran the tests after every session, ran the program myself before every commit, and I pushed back when the AI proposed making genre a small bonus, because I think people name their taste by genre first. The AI also caught its own mistakes when I asked it to check: the worker prompts had the wrong genre count, a report credited me with reasoning that was not mine, and a reason line printed 0.25 as 0.2.
+
+What surprised me is how much five weighted matches and a because line feel like a recommendation. The conflicted profile is the clearest example: a slow sad pop song won a loud profile because two words matched, and the explanation made that feel reasonable even though the numbers said otherwise.
+
+Next I would build the two-cluster profile and grow the catalog, and I would like to replace the typed-in numbers with features measured from audio, so that valence means what the music sounds like instead of what someone imagined.

@@ -14,7 +14,7 @@ recorded in `README.md` ("Algorithm recipe", "Dataset and profiles"); the contra
   commands are presented only after Danny types it.
 - **No signature changes; STOP and report.** The coordinator decides and records it in `MUSICREC_PLAN.md`.
 - Note side issues, don't fix them. One next step at a time for Danny.
-- Every accepted or rejected AI suggestion gets a `#note` line in `ai_interactions.md` (coordinator
+- Every accepted or rejected AI suggestion gets a `#note` line in `notes/build_notes.md` (coordinator
   keeps the log at the bottom; format is described there).
 - Read the real files first. If a plan number and the README disagree, the README wins; say so.
 
