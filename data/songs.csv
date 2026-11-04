@@ -1,21 +1,21 @@
-id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
-1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18
-2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71
-3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10
-4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86
-5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05
-6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92
-7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89
-8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
-9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
-10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
-11,Crown Math,Kid Cadence,hip-hop,confident,0.76,92,0.68,0.85,0.12
-12,Skyline Static,Neon Echo,edm,euphoric,0.94,128,0.88,0.90,0.04
-13,Dust Road Radio,Dusty Mile,country,nostalgic,0.52,100,0.62,0.58,0.74
-14,Empty Hall Etude,LoRoom,classical,sad,0.18,64,0.22,0.25,0.97
-15,Iron Verdict,Iron Hollow,metal,angry,0.97,168,0.25,0.45,0.03
-16,Velvet Hours,Marlo Reyes,r&b,romantic,0.55,84,0.66,0.74,0.40
-17,Fuego en la Calle,Luna Caliente,latin,playful,0.80,100,0.86,0.92,0.25
-18,Porch Light Hymn,Willow Mere,folk,hopeful,0.45,96,0.70,0.52,0.88
-19,Rain on the Radio,June Alder,pop,sad,0.55,76,0.25,0.50,0.45
-20,Salt Tide,Salt Tide Collective,reggae,relaxed,0.48,80,0.78,0.76,0.55
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity,release_decade,mood_tags,explicit,duration_sec
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,87,2020,upbeat|bright,no,195
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,71,2020,calm|nocturnal,no,183
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,64,2000,driving|aggressive,no,247
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,58,2020,cozy|rainy|calm,no,172
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,93,2010,energetic|motivating,no,189
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,33,2010,floating|dreamy|calm,no,312
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,47,1990,smooth|warm|nostalgic,no,264
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,69,2010,retro|nocturnal|brooding,no,238
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,62,2020,steady|calm,no,201
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,74,2010,bright|nostalgic,no,208
+11,Crown Math,Kid Cadence,hip-hop,confident,0.76,92,0.68,0.85,0.12,81,2020,confident|boastful,yes,183
+12,Skyline Static,Neon Echo,edm,euphoric,0.94,128,0.88,0.90,0.04,89,2010,euphoric|energetic,no,224
+13,Dust Road Radio,Dusty Mile,country,nostalgic,0.52,100,0.62,0.58,0.74,56,1990,nostalgic|warm,no,231
+14,Empty Hall Etude,LoRoom,classical,sad,0.18,64,0.22,0.25,0.97,27,1910,mournful|solemn,no,342
+15,Iron Verdict,Iron Hollow,metal,angry,0.97,168,0.25,0.45,0.03,49,1980,furious|heavy,yes,301
+16,Velvet Hours,Marlo Reyes,r&b,romantic,0.55,84,0.66,0.74,0.40,76,2000,sensual|warm,no,252
+17,Fuego en la Calle,Luna Caliente,latin,playful,0.80,100,0.86,0.92,0.25,91,2020,festive|fiery,yes,207
+18,Porch Light Hymn,Willow Mere,folk,hopeful,0.45,96,0.70,0.52,0.88,38,1970,hopeful|gentle|warm,no,275
+19,Rain on the Radio,June Alder,pop,sad,0.55,76,0.25,0.50,0.45,66,2010,melancholy|wistful,no,214
+20,Salt Tide,Salt Tide Collective,reggae,relaxed,0.48,80,0.78,0.76,0.55,52,1990,easygoing|sunny,no,229

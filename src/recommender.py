@@ -33,7 +33,8 @@ class UserProfile:
     likes_acoustic: bool
 
 
-NUMERIC_FIELDS = ("energy", "tempo_bpm", "valence", "danceability", "acousticness")   # S2 converts these to float; "id" to int
+NUMERIC_FIELDS = ("energy", "tempo_bpm", "valence", "danceability", "acousticness",
+                  "popularity", "release_decade", "duration_sec")   # S2 converts these to float; "id" to int; the last three are the S7 extended attributes
 DEFAULT_WEIGHTS: Dict[str, float] = {"genre": 2.0, "mood": 1.0, "energy": 1.0, "valence": 0.5, "acoustic": 0.5}   # decided Nov 2, 2026: partial genre match = half points; valence only when the profile has a target
 
 Scorer = Callable[[Dict, Dict, Optional[Dict]], Tuple[float, List[str]]]
@@ -101,6 +102,31 @@ def score_song(user_prefs: Dict, song: Dict, weights: Optional[Dict] = None) -> 
     if likes_acoustic is not None and w["acoustic"] != 0 and bool(likes_acoustic) == (song["acousticness"] > 0.5):
         score += w["acoustic"]
         reasons.append(f"acoustic fit (+{_points_text(w['acoustic'])})")
+
+    # --- extended attributes (S7) ---
+    # Runs only for songs that carry the new keys, so a song with the original ten columns scores exactly as before.
+    # The values are fixed constants, not entries in the weights dict, so the signature and DEFAULT_WEIGHTS stay as they were.
+    if "popularity" in song:
+        points = 0.5 * float(song["popularity"]) / 100   # up to half a point, for every profile
+        if points > 0:                                    # popularity 0 earns nothing and says nothing
+            score += points
+            reasons.append(f"popular (+{_points_text(points)})")
+
+    favorite_decade = user_prefs.get("favorite_decade")
+    if favorite_decade is not None and "release_decade" in song and float(song["release_decade"]) == float(favorite_decade):
+        score += 0.5
+        reasons.append("decade match (+0.5)")
+
+    wanted_tags = {str(tag).strip().lower() for tag in (user_prefs.get("mood_tags") or [])}
+    song_tags = {tag.strip().lower() for tag in str(song.get("mood_tags") or "").split("|") if tag.strip()}
+    if wanted_tags & song_tags:                           # one shared tag is enough; the half point is paid once
+        score += 0.5
+        reasons.append("mood tag overlap (+0.5)")
+
+    if user_prefs.get("avoid_explicit") and str(song.get("explicit") or "").strip().lower() == "yes":
+        score -= 1.0
+        reasons.append("explicit (-1.0)")
+    # --- end extended attributes (S7) ---
 
     if not reasons:
         reasons.append("no feature matched (+0.0)")
